@@ -1,5 +1,0 @@
-[proxy] 
-192.168.1.18 ansible_ssh_user=root  ansible_ssh_pass=pranayprabal anisble_connection=ssh
-[web]
-192.168.1.19 ansible_ssh_user=root  ansible_ssh_pass=pranayprabal anisble_connection=ssh
-192.168.1.20 ansible_ssh_user=root  ansible_ssh_pass=pranayprabal anisble_connection=ssh
