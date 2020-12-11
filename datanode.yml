@@ -1,0 +1,76 @@
+- hosts: dn
+  vars_prompt:
+        - name: "path"
+          prompt: "'\n'enter the path of directory for datanode"
+          private: no
+        - name: "ip_address"
+          prompt: "'\n'enter the ip adress of  namenode"
+          private: no
+  tasks:
+
+  - name: "copying jdk software"
+    copy:
+        dest: "/root/"
+        src: "jdk-8u171-linux-x64.rpm"
+
+  - name: "copying hadoop software"
+    copy:
+        dest: "/root/"
+        src: "hadoop-1.2.1-1.x86_64.rpm"
+
+  - name: "installing jdk software"
+    command: " rpm -ivh jdk-8u171-linux-x64.rpm"
+    ignore_errors: yes
+    register: installing
+  - debug:
+        var: installing.stdout
+
+  - name: "installing hadoop software"
+    command: " rpm -ivh hadoop-1.2.1-1.x86_64.rpm --force"
+    ignore_errors: yes
+    register: installing
+  - debug:
+        var: installing.stdout
+
+  - name: "making directory for datanode"
+    file:
+        path: "{{ path }}"
+        state: directory
+
+  - name: "configuring the namenode hdfs-site.xml file"  
+    template:
+        dest: "/etc/hadoop/hdfs-site.xml"
+        src: "/etc/hadoop/hdfs-site.xml"
+
+  - name: "configuring the namenode core-site.xml file"  
+    template:
+        dest: "/etc/hadoop/core-site.xml"
+        src: "/etc/hadoop/core-site.xml"
+
+  - name: " cleaning up ram caches"
+    shell: "echo 3 >/proc/sys/vm/drop_caches"
+
+  - name: "starting datanode service"
+    shell: "hadoop-daemon.sh start datanode"
+    ignore_errors: yes
+    register: service
+  - debug:
+        var: service.stdout
+
+  - name: "status of datanode"  
+    command: "jps"
+    register: jps
+  - debug:
+        var: jps.stdout_lines
+  - name: ".................Cluster Report...................."
+    command: "hadoop dfsadmin -report"
+    register: report
+  - debug:
+        var: report.stdout_lines
+
+  - name: "allowing 9001 port no"
+    firewalld:
+          port: "9001/tcp"
+          permanent: yes
+          immediate: yes
+          state: enabled
